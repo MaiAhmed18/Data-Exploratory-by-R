@@ -1,0 +1,43 @@
+---
+title: "lab 5"
+author: "Mai"
+date: "1/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(nycflights13)
+library(tidyr)
+```
+
+```{r}
+
+Edited_flights <- flights %>% 
+  mutate(air_time_in_hours = air_time/60,
+        distance_in_km = distance*1.609,
+        flight_speed = round(distance_in_km/air_time_in_hours)) %>% 
+        filter(month>=4 , month<=9) 
+  
+Edited_flights  %>% 
+  group_by(origin,dest) %>% 
+  summarise(number_of_flights =n(),
+            number_of_planes= n_distinct(tailnum),
+            average_departure_delay=round(mean(dep_delay,na.rm=TRUE)),
+            average_arrival_delay=round(mean(arr_delay,na.rm=TRUE)),
+            average_speed= round(mean( flight_speed,na.rm=TRUE))) %>% 
+ 
+  left_join(airports %>% select(faa,name), by = c("origin"="faa")) %>% 
+  rename(origin_name=name) %>%  
+  left_join(airports %>% select(faa,name), by = c("dest"="faa")) %>% 
+  rename(destination_name=name) %>% 
+   
+  ungroup() %>% 
+   
+  select(origin_name,destination_name,number_of_flights,number_of_planes,  average_departure_delay,average_arrival_delay,average_speed) %>% 
+  filter(number_of_flights >= 1000) %>% 
+  arrange(desc(average_speed)) 
+                           
+```
+
